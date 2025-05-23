@@ -1,5 +1,5 @@
 from ddt import ddt, get_discrete_vector_representation, display_ddt
-from sbox import AsconSBox, DESBox
+from sbox import AsconSBox, DESBox, AESSBox
 from search.local_search import Search as LocalSearch
 
 box = DESBox()
