@@ -1,6 +1,9 @@
 import random
 import numpy as np
+from numba import jit
+
 from ddt import ddt, evaluate, evaluate_table
+
 
 try:
     from deap import base, creator, tools, algorithms
@@ -57,7 +60,7 @@ class SBoxGA:
         self._setup_deap_toolbox()
 
         print(f"SBoxGA inicializado para {self.n}x{self.m}. Población: {self.population_size}, Generaciones: {self.ngen}.")
-        
+
     def _evaluate_sbox_general(self, individual):
         """Función de fitness: Sum of dx = 0 plus std."""
         t = ddt(individual, self.n, self.m)
@@ -65,8 +68,13 @@ class SBoxGA:
         #return (ddt_std_value + mult * nonzero + np.max(t[1:, :]),)
     
     def _get_individual(self, n):
-        if self.initial_sbox is not None:
-            return [creator.Individual(self.initial_sbox) for _ in range(n)]
+        if self.num_inputs == self.num_outputs:
+            sboxes = []
+            for _ in range(n):
+                sbox = list(range(self.num_inputs))
+                random.shuffle(sbox)
+                sboxes.append(creator.Individual(sbox))
+            return sboxes
         return tools.initRepeat(list, self.toolbox.individual, n)
 
     def _setup_deap_toolbox(self):
@@ -81,8 +89,12 @@ class SBoxGA:
 
         # Operadores Genéticos
         self.toolbox.register("evaluate", self._evaluate_sbox_general)
-        self.toolbox.register("mate", tools.cxTwoPoint)
-        self.toolbox.register("mutate", tools.mutUniformInt, low=0, up=self.num_outputs - 1, indpb=0.05)
+        if self.num_inputs == self.num_outputs:
+            self.toolbox.register("mate", tools.cxOrdered)
+            self.toolbox.register("mutate", tools.mutShuffleIndexes, indpb=0.05)
+        else:
+            self.toolbox.register("mate", tools.cxTwoPoint)
+            self.toolbox.register("mutate", tools.mutUniformInt, low=0, up=self.num_outputs - 1, indpb=0.05)
         self.toolbox.register("select", tools.selTournament, tournsize=self.tournsize)
 
     def run(self):
@@ -98,8 +110,7 @@ class SBoxGA:
         print(f"--- Iniciando Evolución ---")
 
         # Ejecuta el algoritmo
-        population, log = algorithms.eaSimple(pop, self.toolbox,
-                                              cxpb=self.cxpb, mutpb=self.mutpb, ngen=self.ngen,
+        population, log = algorithms.eaSimple(pop, self.toolbox, cxpb=self.cxpb, mutpb=self.mutpb, ngen=self.ngen,
                                               stats=stats, halloffame=hof, verbose=True)
 
         print("--- Evolución Terminada ---")

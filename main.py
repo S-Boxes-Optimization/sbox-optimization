@@ -5,7 +5,7 @@ import continuous
 import ga
 import numpy as np
 
-# # DES
+# DES
 # for i in range(1, 9):
 #     box = DESBox(i)
 #     print(f"{i}:", evaluate(box))
@@ -24,11 +24,11 @@ import numpy as np
 # t = ddt(best, 5, 5)
 # print("New one:", evaluate_table(t, 5, 5))
 
-# AES
+# # AES
 box = AESSBox()
 print("Original:", evaluate(box))
 
-genetic_alg = ga.SBoxGA(n=8, m=8, population_size=400, ngen=500, mutpb=0.5, bijectivity_penalty=0)
+genetic_alg = ga.SBoxGA(n=8, m=8, population_size=400, ngen=150, mutpb=0.25, bijectivity_penalty=0)
 best = genetic_alg.run()
 t = ddt(best, 8, 8)
 print("New one:", evaluate_table(t, 8, 8))
