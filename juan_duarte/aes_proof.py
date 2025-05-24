@@ -12,7 +12,7 @@ box    = AESSBox()
 vec = np.array([box.apply(i) for i in range(1 << box.input_size)], dtype=np.uint8)
 
 P = transition_matrix(vec, n_in=8, n_out=8, skip_zero=True)
-
+print(P)
 # 3. la cadena
 chain = DifferentialMarkovChain(P, init="uniform")
 
